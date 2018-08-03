@@ -39,11 +39,11 @@
  */
 function psm_get_lang() {
 	$args = func_get_args();
-	
+
 	if (empty($args)) {
 		return isset($GLOBALS['sm_lang']) ? $GLOBALS['sm_lang'] : $GLOBALS['sm_lang_default'];
 	}
-	
+
 	if (isset($GLOBALS['sm_lang'])) {
 		$lang = $GLOBALS['sm_lang'];
 		$not_found = false;
@@ -86,7 +86,7 @@ function psm_load_lang($lang) {
 	if ($lang != "en_US") {
 		$lang_file = PSM_PATH_LANG.$lang.'.lang.php';
 		file_exists($lang_file) ? require $lang_file : trigger_error("Translation file could not be found! Default language will be used.", E_USER_WARNING);
-		
+
 		isset($sm_lang) ? $GLOBALS['sm_lang'] = $sm_lang : trigger_error("\$sm_lang not found in translation file! Default language will be used.", E_USER_WARNING);
 		isset($sm_lang['locale']) ? setlocale(LC_TIME, $sm_lang['locale']) : trigger_error("locale could not ben found in translation file.", E_USER_WARNING);
 	}
@@ -476,7 +476,7 @@ function psm_update_available() {
  * @return \PHPMailer
  */
 function psm_build_mail($from_name = null, $from_email = null) {
-	$phpmailer = new \PHPMailer();
+	$phpmailer = new \PHPMailer\PHPMailer\PHPMailer();
 	$phpmailer->Encoding = "base64";
 	$phpmailer->CharSet = 'UTF-8';
 	$phpmailer->SMTPDebug = false;
