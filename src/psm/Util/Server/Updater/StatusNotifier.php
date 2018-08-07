@@ -135,7 +135,7 @@ class StatusNotifier {
 		$this->server = $this->db->selectRow(PSM_DB_PREFIX.'servers', array(
 			'server_id' => $server_id,
 		), array(
-			'server_id', 'ip', 'port', 'label', 'type', 'pattern', 'status', 'header_name', 'header_value', 'error', 'active', 'email', 'sms', 'pushover', 'telegram', 'last_online', 'last_offline', 'last_offline_duration',
+			'server_id', 'ip', 'port', 'label', 'type', 'pattern', 'status', 'header_name', 'header_value', 'error', 'active', 'email', 'sms', 'pushover', 'telegram', 'slack', 'last_online', 'last_offline', 'last_offline_duration',
 		));
 		if (empty($this->server)) {
 			return false;
@@ -211,7 +211,7 @@ class StatusNotifier {
         // check if slack is enabled for this server
 		if ($this->send_slack && $this->server['slack'] == 'yes') {
 			// yay lets wake those nerds up!
-			$this->notifyBySlack();
+			$this->notifyBySlack($users);
 		}
 
 		return $notify;
@@ -381,19 +381,23 @@ class StatusNotifier {
 	 *
 	 * @return boolean
 	 */
-	protected function notifyBySlack() {
+	protected function notifyBySlack($users) {
         // Slack
         $message = psm_parse_msg($this->status_new, 'slack_message', $this->server);
         $slack = psm_build_slack();
-        $telegram->setMessage(str_replace('<br/>', "\n", $message));
         // Log
         if (psm_get_conf('log_slack')) {
           $log_id = psm_add_log($this->server_id, 'slack', $message);
         }
-        $result = $telegram->send();
-
-        return $result ? true : false;
-      }
+        foreach ($users as $user) {
+            // Log
+            if (!empty($log_id)) {
+              psm_add_log_user($log_id, $user['user_id']);
+            }
+        }
+        $message = strip_tags(str_replace(array('<br/>', "'"), array("\n", ''), $message));
+        $slack->send($message);
+    }
 
 	/**
 	 * Get all users for the provided server id

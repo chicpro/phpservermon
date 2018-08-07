@@ -51,7 +51,8 @@ class LogController extends AbstractServerController {
 			'label_email' => psm_get_lang('log', 'email'),
 			'label_sms' => psm_get_lang('log', 'sms'),
 			'label_pushover' => psm_get_lang('log', 'pushover'),
-			'label_telegram' => psm_get_lang('log', 'telegram'),
+            'label_telegram' => psm_get_lang('log', 'telegram'),
+            'label_slack' => psm_get_lang('log', 'slack'),
 			'label_title' => psm_get_lang('log', 'title'),
 			'label_server' => psm_get_lang('servers', 'server'),
 			'label_type' => psm_get_lang('log', 'type'),
@@ -72,7 +73,7 @@ class LogController extends AbstractServerController {
 			$tpl_data['has_admin_actions'] = true;
 		}
 
-		$log_types = array('status', 'email', 'sms', 'pushover', 'telegram');
+		$log_types = array('status', 'email', 'sms', 'pushover', 'telegram', 'slack');
 
 		foreach ($log_types as $key) {
 			$records = $this->getEntries($key);
