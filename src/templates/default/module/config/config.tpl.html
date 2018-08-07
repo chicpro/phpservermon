@@ -6,6 +6,7 @@
       <li class="{{ sms_active }}"><a href="#config-sms" data-toggle="tab">{{ label_tab_sms }}</a></li>
       <li class="{{ pushover_active }}"><a href="#config-pushover" data-toggle="tab">{{ label_tab_pushover }}</a></li>
       <li class="{{ telegram_active }}"><a href="#config-telegram" data-toggle="tab">{{ label_tab_telegram }}</a></li>
+      <li class="{{ slack_active }}"><a href="#config-slack" data-toggle="tab">{{ label_tab_slack }}</a></li>
     </ul>
 	<div class="tab-content well">
 	  <div id="config-general" class="tab-pane {{ general_active }}">
@@ -288,6 +289,45 @@
         </div>
       </fieldset>
     </div>
+    <div id="config-slack" class="tab-pane {{ slack_active }}">
+        <fieldset>
+          <legend>{{ label_settings_slack }}</legend>
+          <div class="control-group">
+            <div class="controls">
+              <label class="checkbox" for="slack_status"><input type="checkbox" id="slack_status" name="slack_status[]" {{ slack_status_checked|raw }} /> {{ label_slack_status }}</label>
+              <p class="help-block">{{ label_slack_description|raw }}</p>
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="controls">
+              <label class="checkbox"><input type="checkbox" id="log_slack" name="log_slack[]" {{ log_slack_checked|raw }} /> {{ label_log_slack }}</label>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="slack_channel_name">{{ label_slack_channel_name }}</label>
+            <div class="controls">
+              <input type="text" id="slack_channel_name" name="slack_channel_name" value="{{ slack_channel_name }}" maxlength="255" />
+              <p class="help-block">{{ label_slack_channel_name_description|raw }}</p>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="slack_webhook_url">{{ label_slack_webhook_url }}</label>
+            <div class="controls">
+              <input type="text" id="slack_webhook_url" name="slack_webhook_url" value="{{ slack_webhook_url }}" maxlength="255" />
+              <p class="help-block">{{ label_slack_webhook_url_description|raw }}</p>
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="controls">
+              <button class="btn btn-primary show-modal" data-modal-id="testSlack">{{ label_test }}</button>
+              <input type="hidden" name="test_slack" value="0" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-success" type="submit" name="slack_submit">{{ label_save }}</button>
+          </div>
+        </fieldset>
+      </div>
 	</div>
 	{{ macro.csrf_input() }}
 </form>

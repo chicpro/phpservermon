@@ -533,6 +533,25 @@ function psm_build_telegram() {
 }
 
 /**
+ *
+ * @return \Slack
+ */
+function psm_build_slack() {
+    $webhook = psm_get_conf('slack_webhook_url');
+    $channel = psm_get_conf('slack_channel_name');
+
+    $settings = [
+        'username' => '[phpservermon]',
+        'channel' => $channel,
+        'link_names' => true
+    ];
+
+    $slack = new Maknz\Slack\Client($webhook, $settings);
+
+	return $slack;
+}
+
+/**
  * Prepare a new SMS util.
  *
  * @return \psm\Txtmsg\TxtmsgInterface

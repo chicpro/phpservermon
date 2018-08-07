@@ -41,12 +41,14 @@ class ConfigController extends AbstractController {
 		'email_smtp',
 		'sms_status',
 		'pushover_status',
-		'telegram_status',
+        'telegram_status',
+        'slack_status',
 		'log_status',
 		'log_email',
 		'log_sms',
 		'log_pushover',
-		'log_telegram',
+        'log_telegram',
+        'log_slack',
 		'show_update',
 	);
 
@@ -68,7 +70,9 @@ class ConfigController extends AbstractController {
 		'sms_gateway_password',
 		'sms_from',
 		'pushover_api_token',
-		'telegram_api_token',
+        'telegram_api_token',
+        'slack_channel_name',
+        'slack_webhook_url'
 	);
 
 	private $default_tab = 'general';
@@ -149,7 +153,7 @@ class ConfigController extends AbstractController {
 
 		$tpl_data[$this->default_tab.'_active'] = 'active';
 
-		$testmodals = array('email', 'sms', 'pushover', 'telegram');
+		$testmodals = array('email', 'sms', 'pushover', 'telegram', 'slack');
 		foreach ($testmodals as $modal_id) {
 			$modal = new \psm\Util\Module\Modal($this->twig, 'test'.ucfirst($modal_id), \psm\Util\Module\Modal::MODAL_TYPE_OKCANCEL);
 			$this->addModal($modal);
@@ -202,6 +206,8 @@ class ConfigController extends AbstractController {
 				$this->testPushover();
 			} elseif (!empty($_POST['test_telegram'])) {
 				$this->testTelegram();
+			} elseif (!empty($_POST['test_slack'])) {
+				$this->testSlack();
 			}
 
 			if ($language_refresh) {
@@ -219,6 +225,8 @@ class ConfigController extends AbstractController {
 				$this->default_tab = 'pushover';
 			} elseif (isset($_POST['telegram_submit']) || !empty($_POST['test_telegram'])) {
 				$this->default_tab = 'telegram';
+			} elseif (isset($_POST['slack_submit']) || !empty($_POST['test_slack'])) {
+				$this->default_tab = 'slack';
 			}
 		}
 		return $this->runAction('index');
@@ -337,18 +345,44 @@ class ConfigController extends AbstractController {
 					$this->addMessage(sprintf(psm_get_lang('config', 'telegram_error'), $error), 'error');
 				}
 			}
-		}
+        }
+
+    /**
+	 * Execute slack test
+	 *
+	 * @todo move test to separate class
+	 */
+    protected function testSlack() {
+        $slack = psm_build_slack();
+        $webhook = psm_get_conf('slack_webhook_url');
+        $channel = psm_get_conf('slack_channel_name');
+
+        if (empty($webhook) || empty($channel)) {
+            $this->addMessage(psm_get_lang('config', 'slack_error_no_webhook'), 'error');
+        } else {
+            $result = $slack->send(psm_get_lang('config', 'test_message'));
+
+            if ($result) {
+                $this->addMessage(psm_get_lang('config', 'slack_sent'), 'success');
+            } else {
+                $error = 'Unknown';
+                $this->addMessage(sprintf(psm_get_lang('config', 'slack_error'), $error), 'error');
+            }
+        }
+    }
 
 	protected function getLabels() {
 		return array(
 			'label_tab_email' => psm_get_lang('config', 'tab_email'),
 			'label_tab_sms' => psm_get_lang('config', 'tab_sms'),
 			'label_tab_pushover' => psm_get_lang('config', 'tab_pushover'),
-			'label_tab_telegram' => psm_get_lang('config', 'tab_telegram'),
+            'label_tab_telegram' => psm_get_lang('config', 'tab_telegram'),
+            'label_tab_slack' => psm_get_lang('config', 'tab_slack'),
 			'label_settings_email' => psm_get_lang('config', 'settings_email'),
 			'label_settings_sms' => psm_get_lang('config', 'settings_sms'),
 			'label_settings_pushover' => psm_get_lang('config', 'settings_pushover'),
-			'label_settings_telegram' => psm_get_lang('config', 'settings_telegram'),
+            'label_settings_telegram' => psm_get_lang('config', 'settings_telegram'),
+            'label_settings_slack' => psm_get_lang('config', 'settings_slack'),
 			'label_settings_notification' => psm_get_lang('config', 'settings_notification'),
 			'label_settings_log' => psm_get_lang('config', 'settings_log'),
 			'label_settings_proxy' => psm_get_lang('config', 'settings_proxy'),
@@ -389,7 +423,13 @@ class ConfigController extends AbstractController {
 			'label_telegram_description' => psm_get_lang('config', 'telegram_description'),
 			'label_telegram_status' => psm_get_lang('config', 'telegram_status'),
 			'label_telegram_api_token' => psm_get_lang('config', 'telegram_api_token'),
-			'label_telegram_api_token_description' => psm_get_lang('config', 'telegram_api_token_description'),
+            'label_telegram_api_token_description' => psm_get_lang('config', 'telegram_api_token_description'),
+            'label_slack_description' => psm_get_lang('config', 'slack_description'),
+            'label_slack_channel_name' => psm_get_lang('config', 'slack_channel_name'),
+            'label_slack_channel_name_description' => psm_get_lang('config', 'slack_channel_name_description'),
+            'label_slack_webhook_url' => psm_get_lang('config', 'slack_webhook_url'),
+            'label_slack_webhook_url_description' => psm_get_lang('config', 'slack_webhook_url_description'),
+			'label_slack_status' => psm_get_lang('config', 'slack_status'),
 			'label_alert_type' => psm_get_lang('config', 'alert_type'),
 			'label_alert_type_description' => psm_get_lang('config', 'alert_type_description'),
 			'label_alert_type_status' => psm_get_lang('config', 'alert_type_status'),
@@ -400,7 +440,8 @@ class ConfigController extends AbstractController {
 			'label_log_email' => psm_get_lang('config', 'log_email'),
 			'label_log_sms' => psm_get_lang('config', 'log_sms'),
 			'label_log_pushover' => psm_get_lang('config', 'log_pushover'),
-			'label_log_telegram' => psm_get_lang('config', 'log_telegram'),
+            'label_log_telegram' => psm_get_lang('config', 'log_telegram'),
+            'label_log_slack' => psm_get_lang('config', 'log_slack'),
 			'label_alert_proxy' => psm_get_lang('config', 'alert_proxy'),
 			'label_alert_proxy_url' => psm_get_lang('config', 'alert_proxy_url'),
 			'label_auto_refresh' => psm_get_lang('config', 'auto_refresh'),

@@ -64,7 +64,13 @@ class StatusNotifier {
 	 * Send telegram?
 	 * @var boolean $send_telegram
 	 */
-	protected $send_telegram = false;
+    protected $send_telegram = false;
+
+    /**
+	 * Send slack?
+	 * @var boolean $send_slack
+	 */
+	protected $send_slack = false;
 
 	/**
 	 * Save log records?
@@ -102,7 +108,8 @@ class StatusNotifier {
 		$this->send_emails = psm_get_conf('email_status');
 		$this->send_sms = psm_get_conf('sms_status');
 		$this->send_pushover = psm_get_conf('pushover_status');
-		$this->send_telegram = psm_get_conf('telegram_status');
+        $this->send_telegram = psm_get_conf('telegram_status');
+        $this->send_slack = psm_get_conf('slack_status');
 		$this->save_logs = psm_get_conf('log_status');
 	}
 
@@ -199,6 +206,12 @@ class StatusNotifier {
 		if ($this->send_telegram && $this->server['telegram'] == 'yes') {
 			// yay lets wake those nerds up!
 			$this->notifyByTelegram($users);
+        }
+
+        // check if slack is enabled for this server
+		if ($this->send_slack && $this->server['slack'] == 'yes') {
+			// yay lets wake those nerds up!
+			$this->notifyBySlack();
 		}
 
 		return $notify;
@@ -361,7 +374,26 @@ class StatusNotifier {
 		$telegram->setUser($user['telegram_id']);
 		$telegram->send();
 	  }
-	}
+    }
+
+    /**
+	 * This functions performs the slack notifications
+	 *
+	 * @return boolean
+	 */
+	protected function notifyBySlack() {
+        // Slack
+        $message = psm_parse_msg($this->status_new, 'slack_message', $this->server);
+        $slack = psm_build_slack();
+        $telegram->setMessage(str_replace('<br/>', "\n", $message));
+        // Log
+        if (psm_get_conf('log_slack')) {
+          $log_id = psm_add_log($this->server_id, 'slack', $message);
+        }
+        $result = $telegram->send();
+
+        return $result ? true : false;
+      }
 
 	/**
 	 * Get all users for the provided server id

@@ -243,6 +243,7 @@ class Installer {
 						  `sms` enum('yes','no') NOT NULL default 'no',
 						  `pushover` enum('yes','no') NOT NULL default 'yes',
 						  `telegram` enum('yes','no') NOT NULL default 'yes',
+                          `slack` enum('yes','no') NOT NULL default 'yes',
 			              `warning_threshold` mediumint(1) unsigned NOT NULL DEFAULT '1',
 			              `warning_threshold_counter` mediumint(1) unsigned NOT NULL DEFAULT '0',
 			              `timeout` smallint(1) unsigned NULL DEFAULT NULL,
@@ -539,6 +540,6 @@ class Installer {
 		if (psm_get_conf('sms_gateway') == 'mollie') {
 			psm_update_conf('sms_gateway', 'messagebird');
 		}
-		
+
 	}
 }
